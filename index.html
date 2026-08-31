@@ -1,0 +1,583 @@
+<title>Splichal OS</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Source+Code+Pro:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --tan: #EEEFE9;          /* posthog light-2 / tan */
+    --paper: #FDFDF8;        /* light-1 */
+    --ink: #23251D;          /* light-12 */
+    --muted: #65675E;        /* careers sidebar label gray */
+    --faint: #9EA096;        /* light-10 */
+    --line: #D2D3CC;         /* light-4 */
+    --red: #F54E00;
+    --blue: #2F80FA;
+    --pale-blue: #D2E6FF;
+    --yellow: #F7A501;
+    --btn-border: #B17816;
+    --btn-shadow: #CD8407;
+    --highlight: rgba(235, 157, 42, .28);
+    --green-deep: #2E5D2C;
+    --green-mid: #4E8C41;
+    --display: 'Figtree', 'Matter SQ', -apple-system, sans-serif;
+    --body: 'IBM Plex Sans', -apple-system, 'Segoe UI', sans-serif;
+    --code: 'Source Code Pro', Menlo, Consolas, monospace;
+    color-scheme: light;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { transition: none !important; }
+  }
+
+  body {
+    margin: 0;
+    background: var(--green-deep);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 15.5px;
+    line-height: 1.6;
+  }
+
+  ::selection { background: var(--pale-blue); color: #1E2F46; }
+
+  a { color: var(--red); text-decoration: underline; text-underline-offset: 2px; }
+  a:hover { text-decoration-thickness: 2px; }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 2px; }
+
+  /* ---------- desktop wallpaper ---------- */
+  .desktop {
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(1.5px 1.5px at 22% 34%, rgba(255,255,255,.14) 0 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 68% 12%, rgba(255,255,255,.10) 0 50%, transparent 51%),
+      radial-gradient(2px 2px at 84% 62%, rgba(255,255,255,.12) 0 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 40% 80%, rgba(255,255,255,.10) 0 50%, transparent 51%),
+      radial-gradient(120% 90% at 50% -10%, var(--green-mid) 0%, var(--green-deep) 62%, #23481F 100%);
+  }
+  .desktop::after {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: repeating-linear-gradient(115deg, rgba(255,255,255,.03) 0 2px, transparent 2px 90px);
+  }
+
+  /* ---------- menu bar ---------- */
+  .menubar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 40;
+    display: flex; align-items: center; gap: 4px;
+    height: 46px; padding: 0 14px;
+    background: var(--tan);
+    border-bottom: 1px solid rgba(0,0,0,.28);
+    box-shadow: 0 1px 0 rgba(255,255,255,.5) inset;
+  }
+  .menubar .brand {
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--display); font-weight: 800; font-size: 15px;
+    color: var(--ink); text-decoration: none; margin-right: 14px;
+  }
+  .menubar .brand:hover { text-decoration: none; }
+  .menubar nav { display: flex; gap: 2px; }
+  .menubar nav a {
+    color: var(--ink); text-decoration: none;
+    font-size: 14px; font-weight: 500;
+    padding: 5px 10px; border-radius: 5px;
+  }
+  .menubar nav a:hover { background: rgba(0,0,0,.06); }
+  .menubar .spacer { flex: 1; }
+  .clock {
+    font-family: var(--code); font-size: 13px; color: var(--muted);
+    margin-right: 12px; font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- posthog-style 3D button ---------- */
+  .ph-btn {
+    position: relative; display: inline-block;
+    background: var(--btn-shadow); border-radius: 6px;
+    text-decoration: none; border: none; padding: 0; cursor: pointer;
+    font-family: var(--body);
+  }
+  .ph-btn .face {
+    display: block; transform: translateY(-2px);
+    background: var(--yellow);
+    border: 1.5px solid var(--btn-border); border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 14px; font-weight: 700; color: var(--ink);
+    transition: transform .1s ease;
+  }
+  .ph-btn:hover .face { transform: translateY(-3px); }
+  .ph-btn:active .face { transform: translateY(-1px); }
+  .ph-btn.lg .face { padding: 10px 22px; font-size: 15px; }
+
+  /* ---------- desktop icons ---------- */
+  .icons {
+    position: fixed; top: 82px; z-index: 5;
+    display: flex; flex-direction: column; gap: 26px;
+    width: 124px;
+  }
+  .icons.left { left: 18px; }
+  .icons.right { right: 18px; }
+  .dicon {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    text-decoration: none; text-align: center;
+  }
+  .dicon .glyph {
+    width: 52px; height: 52px; display: grid; place-items: center;
+    font-size: 30px; border-radius: 10px;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.18);
+    transition: background .15s ease;
+  }
+  .dicon:hover .glyph { background: rgba(255,255,255,.26); }
+  .dicon .label {
+    font-family: var(--code); font-size: 11.5px; line-height: 1.3;
+    color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.55);
+  }
+
+  /* ---------- the window ---------- */
+  .window {
+    position: relative; z-index: 10;
+    max-width: 860px;
+    margin: 86px auto 120px;
+    background: linear-gradient(180deg, #F6F7F1 0%, var(--tan) 120px);
+    border: 1px solid rgba(0,0,0,.32);
+    border-radius: 10px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.45), 0 2px 8px rgba(0,0,0,.25);
+    overflow: hidden;
+  }
+  .titlebar {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px;
+    background: linear-gradient(180deg, #FBFBF7, #EDEEE8);
+    border-bottom: 1px solid var(--line);
+  }
+  .titlebar .fname {
+    font-family: var(--code); font-size: 12.5px; color: var(--muted);
+  }
+  .titlebar .win-controls {
+    margin-left: auto; display: flex; gap: 12px;
+    color: var(--faint); font-size: 14px; line-height: 1;
+    font-family: var(--body); user-select: none;
+  }
+
+  .doc { padding: 48px 58px 40px; }
+
+  /* ---------- doc header ---------- */
+  .eyebrow {
+    font-family: var(--code); font-size: 12px; font-weight: 600;
+    letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 10px;
+  }
+  h1 {
+    font-family: var(--display); font-weight: 800;
+    font-size: clamp(38px, 6vw, 54px); line-height: 1.05;
+    letter-spacing: -0.015em; margin: 0 0 14px;
+    text-wrap: balance;
+  }
+  .tagline {
+    font-family: var(--display); font-weight: 700;
+    font-size: clamp(19px, 2.6vw, 23px); line-height: 1.35;
+    margin: 0 0 18px; max-width: 34em; text-wrap: balance;
+  }
+  .sel {
+    background: var(--pale-blue); color: #1657B8;
+    border-radius: 4px; padding: 0 4px; white-space: nowrap;
+  }
+  .lede { max-width: 40em; margin: 0 0 26px; color: #3A3C33; }
+
+  .meta-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px;
+    padding: 18px 0; margin-bottom: 30px;
+    border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  }
+  .meta-item .k {
+    display: flex; align-items: center; gap: 6px;
+    font-weight: 700; font-size: 13.5px; margin-bottom: 2px;
+  }
+  .meta-item .k svg { width: 15px; height: 15px; flex: none; color: var(--muted); }
+  .meta-item .v { font-size: 13.5px; color: var(--muted); overflow-wrap: anywhere; }
+  .meta-item .v a { color: var(--red); }
+
+  /* ---------- get started card ---------- */
+  .start-card {
+    background: var(--paper);
+    border: 1px solid var(--line); border-radius: 8px;
+    padding: 18px 20px; margin-bottom: 44px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.05);
+  }
+  .start-card .card-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 12px; margin-bottom: 12px;
+  }
+  .start-card .card-head b { font-size: 15px; }
+  .start-card .card-head span { font-size: 13px; color: var(--muted); }
+  .cmd {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    background: #fff; border: 1px solid var(--line); border-radius: 6px;
+    padding: 9px 12px; margin-bottom: 12px;
+    font-family: var(--code); font-size: 13.5px;
+  }
+  .cmd .p1 { color: var(--muted); }
+  .cmd .p2 { color: var(--red); }
+  .cmd .p3 { color: var(--blue); }
+  .cmd button {
+    border: none; background: none; cursor: pointer; color: var(--faint);
+    font-family: var(--code); font-size: 12px; padding: 2px 4px; border-radius: 4px;
+  }
+  .cmd button:hover { color: var(--ink); background: var(--tan); }
+  .start-card .foot {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 14px; flex-wrap: wrap;
+  }
+  .start-card .foot .note { font-size: 13px; color: var(--muted); }
+
+  /* ---------- sections ---------- */
+  section { margin-bottom: 46px; scroll-margin-top: 64px; }
+  h2 {
+    font-family: var(--display); font-weight: 700;
+    font-size: 26px; letter-spacing: -0.01em;
+    margin: 6px 0 20px;
+  }
+
+  /* experience */
+  .role { margin-bottom: 30px; }
+  .role:last-child { margin-bottom: 0; }
+  .role-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap; margin-bottom: 2px;
+  }
+  .role-head h3 {
+    font-family: var(--display); font-weight: 700; font-size: 17.5px; margin: 0;
+  }
+  .role-head .dates {
+    font-family: var(--code); font-size: 12.5px; color: var(--muted);
+    white-space: nowrap; font-variant-numeric: tabular-nums;
+  }
+  .role .org { font-size: 13.5px; color: var(--muted); margin: 0 0 8px; }
+  .role .org b { color: var(--ink); font-weight: 600; }
+  .role ul { margin: 0; padding-left: 2px; list-style: none; }
+  .role li {
+    padding-left: 18px; position: relative; margin-bottom: 6px;
+    max-width: 44em;
+  }
+  .role li::before {
+    content: "▸"; position: absolute; left: 0; top: 0;
+    color: var(--red); font-size: 12px; line-height: 1.9;
+  }
+
+  /* skills */
+  .skills-grid {
+    display: grid; grid-template-columns: 150px 1fr;
+    gap: 14px 18px; align-items: start;
+  }
+  .skills-grid .g {
+    font-family: var(--code); font-size: 11.5px; font-weight: 600;
+    letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+    padding-top: 4px;
+  }
+  .pills { display: flex; flex-wrap: wrap; gap: 7px; }
+  .pill {
+    font-family: var(--code); font-size: 12.5px;
+    background: var(--paper); border: 1px solid var(--line);
+    border-radius: 4px; padding: 3px 9px; white-space: nowrap;
+  }
+
+  /* projects */
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .card {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 8px;
+    padding: 16px 18px; box-shadow: 0 2px 6px rgba(0,0,0,.05);
+  }
+  .card h3 { font-family: var(--display); font-weight: 700; font-size: 15.5px; margin: 0 0 6px; }
+  .card p { margin: 0; font-size: 13.5px; color: #3A3C33; }
+
+  /* education + contact */
+  .edu-line { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; max-width: 44em; }
+  .edu-line .dates { font-family: var(--code); font-size: 12.5px; color: var(--muted); }
+
+  .contact-box {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 8px;
+    padding: 26px 28px; text-align: center;
+  }
+  .contact-box p { margin: 0 auto 16px; max-width: 36em; }
+  .contact-box .ps { font-size: 13px; color: var(--muted); margin: 14px 0 0; }
+  .contact-box .contact-links {
+    font-family: var(--code); font-size: 12px; color: var(--muted);
+    margin: 16px auto 0; text-align: center; max-width: none;
+  }
+  .contact-box .contact-links a { white-space: nowrap; }
+
+  /* ---------- status bar ---------- */
+  .statusbar {
+    display: flex; justify-content: space-between; gap: 12px;
+    padding: 6px 14px;
+    background: #EDEEE8; border-top: 1px solid var(--line);
+    font-family: var(--code); font-size: 11.5px; color: var(--faint);
+  }
+
+  /* ---------- cookie banner parody ---------- */
+  .cookie {
+    position: fixed; right: 20px; bottom: 20px; z-index: 50;
+    width: 340px; background: #fff;
+    border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: 0 12px 34px rgba(0,0,0,.35);
+    padding: 16px 18px;
+  }
+  .cookie .c-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .cookie b { font-size: 14.5px; }
+  .cookie button {
+    border: none; background: none; cursor: pointer;
+    font-size: 16px; color: var(--faint); padding: 0 2px; line-height: 1;
+  }
+  .cookie button:hover { color: var(--ink); }
+  .cookie p { margin: 8px 0 0; font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 1160px) { .icons { display: none; } }
+  @media (max-width: 900px) {
+    .doc { padding: 32px 24px; }
+    .window { margin: 66px 10px 90px; }
+    .menubar nav a { padding: 5px 7px; font-size: 13px; }
+    .clock { display: none; }
+    .meta-grid { grid-template-columns: 1fr 1fr; }
+    .cards { grid-template-columns: 1fr; }
+    .skills-grid { grid-template-columns: 1fr; gap: 4px 0; }
+    .skills-grid .pills { margin-bottom: 12px; }
+    .cookie { display: none; }
+  }
+  @media (max-width: 560px) {
+    .menubar nav { display: none; }
+  }
+
+  /* ---------- print: the OS folds away, a clean CV remains ---------- */
+  @media print {
+    @page { size: A4; margin: 12mm 14mm; }
+    html, body { height: auto; overflow: visible; }
+    body { background: #fff; font-size: 10pt; }
+    * { box-shadow: none !important; }
+    .window { overflow: visible; }
+    .eyebrow, h2 { break-after: avoid; }
+    section:last-child { margin-bottom: 0; }
+    .contact-box { break-inside: avoid; padding: 16px 20px; }
+    .cards { gap: 10px; }
+    .card { padding: 12px 14px; }
+    .role { margin-bottom: 20px; }
+    h2 { font-size: 17pt; margin-bottom: 12px; }
+    .meta-grid { padding: 12px 0; margin-bottom: 18px; }
+    .lede { margin-bottom: 18px; }
+    .desktop, .menubar, .icons, .cookie, .statusbar, .titlebar,
+    .start-card .foot, .no-print { display: none !important; }
+    .window {
+      margin: 0; max-width: none; border: none; border-radius: 0;
+      box-shadow: none; background: #fff;
+    }
+    .doc { padding: 0; }
+    h1 { font-size: 24pt; }
+    .tagline { font-size: 12.5pt; }
+    section { margin-bottom: 18px; }
+    .role, .card, .start-card { break-inside: avoid; }
+    .cards { grid-template-columns: 1fr 1fr; }
+    .sel, .ph-btn .face {
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    a { color: var(--red); }
+    .contact-box { border: 1px solid var(--line); }
+  }
+</style>
+
+<div class="desktop" aria-hidden="true"></div>
+
+<header class="menubar">
+  <a class="brand" href="#top"><span aria-hidden="true">🦔</span> Jan Splichal</a>
+  <nav aria-label="Sections">
+    <a href="#experience">Experience</a>
+    <a href="#skills">Skills</a>
+    <a href="#projects">Projects</a>
+    <a href="#contact">Contact</a>
+  </nav>
+  <div class="spacer"></div>
+  <span class="clock" id="clock" aria-hidden="true"></span>
+  <a class="ph-btn" href="mailto:jan@splichal.me"><span class="face">Get in touch</span></a>
+</header>
+
+<div class="icons left" aria-hidden="false">
+  <a class="dicon" href="#summary"><span class="glyph">📄</span><span class="label">about_me.txt</span></a>
+  <a class="dicon" href="#experience"><span class="glyph">📊</span><span class="label">experience.log</span></a>
+  <a class="dicon" href="#projects"><span class="glyph">🛠️</span><span class="label">projects/</span></a>
+</div>
+<div class="icons right">
+  <a class="dicon" href="#contact"><span class="glyph">✉️</span><span class="label">contact.eml</span></a>
+</div>
+
+<main class="window" id="top">
+  <div class="titlebar">
+    <span class="win-controls" aria-hidden="true"><span>–</span><span>□</span><span>✕</span></span>
+  </div>
+
+  <div class="doc">
+    <p class="eyebrow">~/jan_splichal/readme</p>
+    <h1>Jan Splichal</h1>
+    <p class="tagline">An engineer who puts customers into <span class="sel">self-driving mode</span>.</p>
+    <p class="lede">
+      I managed key accounts and recruited engineers for four years, then retrained
+      and became one. Today I lead engineering for Customer Experience at Rohlik Group,
+      a company built on customer obsession. I troubleshoot like an engineer, explain it like
+      a human, and remove blockers before anyone even files a ticket.
+    </p>
+
+    <div class="meta-grid" id="summary">
+      <div class="meta-item">
+        <span class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-5.1-7-11a7 7 0 1 1 14 0c0 5.9-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Location</span>
+        <span class="v">Prague, Czechia</span>
+      </div>
+      <div class="meta-item">
+        <span class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Timezone</span>
+        <span class="v">GMT+1, EMEA native</span>
+      </div>
+      <div class="meta-item">
+        <span class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-6h6v6"/></svg>Currently</span>
+        <span class="v">EM @ Rohlik Group</span>
+      </div>
+      <div class="meta-item">
+        <span class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Contact</span>
+        <span class="v"><a href="mailto:jan@splichal.me">jan@splichal.me</a></span>
+      </div>
+    </div>
+
+    <section id="experience">
+      <p class="eyebrow">~/experience</p>
+      <h2>Experience</h2>
+
+      <div class="role">
+        <div class="role-head">
+          <h3>Engineering Manager</h3>
+          <span class="dates">Jul 2025 → now</span>
+        </div>
+        <p class="org"><b>Rohlik Group</b>, Prague · online grocery, 5 markets, 1M+ customers</p>
+        <ul>
+          <li>Lead 10 mostly-senior engineers across three teams (Platform, Acquisition, Payments) building the storefront, the Kotlin Multiplatform mobile app and the payment experience. I still merge code weekly and run the hiring interviews myself.</li>
+          <li>Built Voice of Customer, the internal portal that pulls customer feedback from 10 different sources into one stream the whole org actively works, plus the pipeline that turns that feedback into prioritized engineering tickets.</li>
+          <li>Guard the customer's first impression: own the first-time-user journey across web and apps, and report experiment results with data to executives in cross-functional growth war rooms, down to reporting automation I build myself.</li>
+          <li>First responder when a customer hurts: run the Daktela contact-center platform across four countries, sit in the support channels and reproduce reported bugs myself, once repairing ~950 corrupted customer records within the hour. When something breaks, I write the plain-language incident summary that support, executives and the founder can act on.</li>
+        </ul>
+      </div>
+
+      <div class="role">
+        <div class="role-head">
+          <h3>Java Backend Developer → Senior Developer / Team Leader</h3>
+          <span class="dates">Mar 2019 → Jul 2025</span>
+        </div>
+        <p class="org"><b>Rohlik Group</b> · junior to team leader in six years</p>
+        <ul>
+          <li>Built Rohlik's in-house customer-analytics stack over four years: a standalone A/B-testing service, a GA4 event layer, a customer-journey pipeline and referral/affiliate attribution.</li>
+          <li>Owned the referral and first-time-user acquisition domain across five markets, from FTU segmentation and incentives to welcome pricing.</li>
+          <li>Shipped real-time order tracking with iOS Live Activities across three backend services, on the customer-notifications platform I helped build.</li>
+          <li>Junior years: the mobile app's backend-for-frontend (homepage, sign-in, ordering) and the Rohlik Chef meal-kit overhaul.</li>
+        </ul>
+      </div>
+
+      <div class="role">
+        <div class="role-head">
+          <h3>Talent Acquisition Manager, EMEA</h3>
+          <span class="dates">2017 → 2018</span>
+        </div>
+        <p class="org"><b>Cyient</b>, Prague · global engineering-solutions provider</p>
+        <ul>
+          <li>Managed a team of 5 recruiters plus an offshore sourcer; reworked EMEA recruitment end to end and consulted business-unit heads on hiring strategy.</li>
+        </ul>
+      </div>
+
+      <div class="role">
+        <div class="role-head">
+          <h3>Key Account Manager · Recruitment Consultant</h3>
+          <span class="dates">2014 → 2017</span>
+        </div>
+        <p class="org"><b>Grafton Technologies</b>, Prague · recruitment agency, engineering division</p>
+        <ul>
+          <li>Owned the division's 3 largest client accounts, leading 3 delivery consultants: per-client strategy, relationship development, KPI reporting, cross- and up-sell.</li>
+          <li>Before that: managed a portfolio of 9 accounts as a consultant, covering sourcing, interviewing, and recruitment strategy for engineering clients.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="skills">
+      <p class="eyebrow">~/skills</p>
+      <h2>Skills</h2>
+      <div class="skills-grid">
+        <span class="g">Customers &amp; teams</span>
+        <span class="pills"><span class="pill">Account management</span><span class="pill">Escalations &amp; incident comms</span><span class="pill">Contact-center ops (Daktela)</span><span class="pill">Async writing</span></span>
+        <span class="g">Product &amp; data</span>
+        <span class="pills"><span class="pill">PostHog</span><span class="pill">Event taxonomy</span><span class="pill">A/B testing &amp; funnels</span><span class="pill">Feature flags &amp; rollouts</span><span class="pill">GA4/sGTM debugging</span><span class="pill">Session attribution</span></span>
+        <span class="g">Engineering</span>
+        <span class="pills"><span class="pill">Java &amp; Spring (7 yrs)</span><span class="pill">SQL</span><span class="pill">TypeScript/React</span><span class="pill">RabbitMQ</span><span class="pill">Kubernetes</span><span class="pill">GCP</span></span>
+      </div>
+    </section>
+
+    <section id="projects">
+      <p class="eyebrow">~/selected_work</p>
+      <h2>Selected work</h2>
+      <div class="cards">
+        <div class="card">
+          <h3>PostHog, from the customer's chair</h3>
+          <p>I sponsored Rohlik's PostHog trial and my teams shipped the instrumentation (funnels, session attribution, session replay, exception capture) across web, apps and backend, with PostHog's own team in a shared Slack channel. I won't pretend I know the product better than you do, but I have a strong sense of what a customer's first quarter feels like.</p>
+        </div>
+        <div class="card">
+          <h3>The in-house PostHog I tried to build myself</h3>
+          <p>4 years before implementing PostHog into our product we tried to build everything by ourselves. I was responsible for GA4 implementation, brand new service for AB Testing on both our frontend and backend as well as a new service for easy affiliate implementations into our systems. Believe me when I say that I understand why companies buy a full stack solution rather than build it from scratch.</p>
+        </div>
+        <div class="card">
+          <h3>Referral program</h3>
+          <p>Lead developer of Rohlik's referral program, one of the main engines of new-customer acquisition across five markets. I owned the backend, led the implementation across web and the mobile apps, and organized the group's work, from reward mechanics and welcome incentives to the guardrails that keep the program fraud-proof.</p>
+        </div>
+        <div class="card">
+          <h3>This CV</h3>
+          <p>Built from posthog.com's own design tokens: the tan, the yellow button, the highlighter. Hit ⌘P and the desktop folds away; it prints as a plain A4 résumé.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="education">
+      <p class="eyebrow">~/education</p>
+      <h2>Education &amp; extras</h2>
+      <div class="edu-line"><span><b>Bc., National Economics</b> · Prague University of Economics and Business (VŠE)</span><span class="dates">2005 → 2009</span></div>
+      <div class="edu-line"><span><b>Green Fox Academy</b> · intensive Java &amp; Spring Boot bootcamp; the career switch</span><span class="dates">2018 → 2019</span></div>
+      <div class="edu-line"><span>Czech (native) · English (fluent) · German (basic)</span></div>
+    </section>
+
+    <section id="contact">
+      <div class="contact-box">
+        <p><b>You made it to the bottom.</b> That's the strongest retention signal this document will emit. Let's talk about how I'd look after your EMEA customers.</p>
+        <a class="ph-btn lg" href="mailto:jan@splichal.me?subject=Interview"><span class="face">Schedule an interview</span></a>
+        <p class="contact-links"><a href="mailto:jan@splichal.me">jan@splichal.me</a> · <a href="https://www.linkedin.com/in/jansplichal">linkedin.com/in/jansplichal</a> · <a href="tel:+420725527882">+420 725 527 882</a></p>
+      </div>
+    </section>
+  </div>
+
+</main>
+
+<aside class="cookie" id="cookie">
+  <div class="c-head">
+    <b>Legally-required cookie banner</b>
+    <button type="button" id="cookie-x" aria-label="Dismiss">✕</button>
+  </div>
+  <p>This CV doesn't use third-party embellishments, only first-party achievements collected with the candidate's consent. No data leaves this page.</p>
+</aside>
+
+<script>
+  (function () {
+    var clock = document.getElementById('clock');
+    function tick() {
+      try {
+        clock.textContent = new Date().toLocaleTimeString('en-GB', {
+          hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Prague'
+        }) + ' Prague';
+      } catch (e) { clock.textContent = ''; }
+    }
+    tick(); setInterval(tick, 30000);
+
+    document.getElementById('cookie-x').addEventListener('click', function () {
+      document.getElementById('cookie').hidden = true;
+    });
+
+  })();
+</script>
